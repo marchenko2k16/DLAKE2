@@ -15,8 +15,9 @@ private:
 	float previousTime;
 	//SPRITE INFO. SHOULD NOT APPEAR IN THIS CLASS, I GUESS
 	Sprite* reticleSprite;
-	Sprite* enemySprite;
-	Sprite* bulletSprite;
+	//because when delete sprite we will delete this sprite for all objs
+	//Sprite* enemySprite;
+	//Sprite* bulletSprite;
 	Sprite* playerSprite;
 
 	int reticleSpriteX, reticleSpriteY;

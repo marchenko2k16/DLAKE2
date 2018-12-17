@@ -26,9 +26,7 @@ void FrameworkImplementation::collisionDetection()///TODO - AABB
 
 		if ( (playerSpriteX/2 + enemySpriteX/2)  >= betweenPlayerEnemy)
 		{
-			std::cout << "PLAYER - ENEMY COLLISION DETECTED \n U ARE DEAD, DITCH\N";
-			//EOG - END OF GAME 
-			///TODO
+			staticPlayer->State = Player::DEAD;
 		}
 	}
 	//enemy - enemy
@@ -43,7 +41,6 @@ void FrameworkImplementation::collisionDetection()///TODO - AABB
 
 			if (enemySpriteX >= betweenEnemyEnemy)
 				{
-					std::cout << "ENEMY - ENEMY COLLISION DETECTED \n";
 				}
 			}
 	}
@@ -61,7 +58,6 @@ void FrameworkImplementation::collisionDetection()///TODO - AABB
 				delete_object(i, j);
 				--enemiesNum;
 				--bulletsInGame;
-				std::cout << "BULLET - ENEMY COLLISION DETECTED \n";
 			}
 		}
 	}
@@ -69,7 +65,7 @@ void FrameworkImplementation::collisionDetection()///TODO - AABB
 void FrameworkImplementation::create_bullet()
 {
 	bulletsInGame += 1;
-	gameObjects.push_back(new Bullet(bulletSprite, mouseX, mouseY));
+	gameObjects.push_back(new Bullet(createSprite("bullet.png"), mouseX, mouseY));
 	gameObjects.at(gameObjects.size() - 1)->spriteSizeX = bulletSpriteX;
 	gameObjects.at(gameObjects.size() - 1)->spriteSizeY = bulletSpriteY;
 	gameObjects.at(gameObjects.size() - 1)->currentPosX = staticPlayer->currentPosX;
@@ -78,8 +74,8 @@ void FrameworkImplementation::create_bullet()
 
 void FrameworkImplementation::delete_object(int first_index, int second_index)
 {
-	//destroySprite(gameObjects.at(first_index)->sprite);
-	//destroySprite(gameObjects.at(second_index)->sprite);
+	destroySprite(gameObjects.at(first_index)->sprite);
+	destroySprite(gameObjects.at(second_index)->sprite);
 	
 	gameObjects.erase(gameObjects.begin() + first_index);
 	gameObjects.erase(gameObjects.begin() + (second_index - 1));
@@ -102,13 +98,13 @@ bool FrameworkImplementation::Init()
 	showCursor(false);
 	{//sprite part
 		reticleSprite = createSprite("circle.tga");
-		enemySprite = createSprite("enemy.png");
-		bulletSprite = createSprite("bullet.png");
+		///enemySprite = createSprite("enemy.png");
+		///bulletSprite = createSprite("bullet.png");
 		playerSprite = createSprite("avatar.jpg");
 
 		getSpriteSize(reticleSprite, reticleSpriteX, reticleSpriteY);
-		getSpriteSize(bulletSprite, bulletSpriteX, bulletSpriteY);
-		getSpriteSize(enemySprite, enemySpriteX, enemySpriteY);
+		getSpriteSize(createSprite("bullet.png"), bulletSpriteX, bulletSpriteY);
+		getSpriteSize(createSprite("enemy.png"), enemySpriteX, enemySpriteY);
 		getSpriteSize(playerSprite, playerSpriteX, playerSpriteY);
 	}
 	{//player part
@@ -129,7 +125,7 @@ bool FrameworkImplementation::Init()
 
 		for (int i = 0; i < enemiesNum; i++)
 		{
-			gameObjects.push_back(new Enemy(enemySprite, distributionX(randomizeX), distributionY(randomizeY)));
+			gameObjects.push_back(new Enemy(createSprite("enemy.png"), distributionX(randomizeX), distributionY(randomizeY)));
 			gameObjects.at(i + 1)->spriteSizeX = enemySpriteX;
 			gameObjects.at(i + 1)->spriteSizeY = enemySpriteY;
 		}
@@ -141,6 +137,10 @@ void FrameworkImplementation::Close() {}
 bool FrameworkImplementation::Tick()
 {
 	collisionDetection();
+	if (staticPlayer->State == Player::DEAD)
+	{
+		return true;
+	}
 	float currentTime = getTickCount() / 1000.0;
 	float deltaTime = currentTime - previousTime;
 	//std::cout << deltaTime << "\n";
@@ -174,6 +174,7 @@ bool FrameworkImplementation::Tick()
 	playerDislocationX = 0;
 	playerDislocationY = 0;
 	previousTime = currentTime;
+
 	return false;
 }
 void FrameworkImplementation::onMouseMove(int x, int y, int xrelative, int yrelative)
