@@ -4,7 +4,7 @@ Player* FrameworkImplementation::staticPlayer;
 
 /*
 	---SOME NOTES
-	---ENEMY.PNG IS SPRITE SIZE IS X, BUT THE VISUAL SIZE OF PICTURE IS LIKE X - N, CAUSE OF ALPHA CHANEL
+	---ENEMY.PNG SPRITE SIZE IS X, BUT THE VISUAL SIZE OF PICTURE IS LIKE X minus N, CAUSE OF ALPHA CHANEL
 	---ALL AROUND THE ENEMY PIC, SO TO COUNT COLLISION THE RADIS SHOULD BE COUNTED BASED NOT ONLY ON ENEMY.PNG SIZE(X/Y).
 	---BUT ALSO WE SHOULD SUBSTRUCT SOME N VALUE, TO MAKE VISUAL COLLISIONS MORE REALISTIC
 */
@@ -55,24 +55,24 @@ void FrameworkImplementation::collisionDetection()///TODO - AABB
 			);//for debug
 			if ( (bulletSpriteY / 2.0 + enemySpriteY / 2.0) >= betweenBulletEnemy)
 			{
-				delete_object(i, j);
+				deleteObject(i, j);
 				--enemiesNum;
 				--bulletsInGame;
 			}
 		}
 	}
 }
-void FrameworkImplementation::create_bullet()
+void FrameworkImplementation::createBullet()
 {
 	bulletsInGame += 1;
-	gameObjects.push_back(new Bullet(createSprite("bullet.png"), mouseX, mouseY));
+	gameObjects.push_back(new Bullet(createSprite("bullet.png"), mouseX, mouseY, 50));
 	gameObjects.at(gameObjects.size() - 1)->spriteSizeX = bulletSpriteX;
 	gameObjects.at(gameObjects.size() - 1)->spriteSizeY = bulletSpriteY;
 	gameObjects.at(gameObjects.size() - 1)->currentPosX = staticPlayer->currentPosX;
 	gameObjects.at(gameObjects.size() - 1)->currentPosY = staticPlayer->currentPosY;
 }
 
-void FrameworkImplementation::delete_object(int first_index, int second_index)
+void FrameworkImplementation::deleteObject(int first_index, int second_index)
 {
 	destroySprite(gameObjects.at(first_index)->sprite);
 	destroySprite(gameObjects.at(second_index)->sprite);
@@ -96,10 +96,8 @@ bool FrameworkImplementation::Init()
 	playerDislocationY = 0;
 	bulletsInGame = 0;
 	showCursor(false);
-	{//sprite part
+	{
 		reticleSprite = createSprite("circle.tga");
-		///enemySprite = createSprite("enemy.png");
-		///bulletSprite = createSprite("bullet.png");
 		playerSprite = createSprite("avatar.jpg");
 
 		getSpriteSize(reticleSprite, reticleSpriteX, reticleSpriteY);
@@ -107,14 +105,13 @@ bool FrameworkImplementation::Init()
 		getSpriteSize(createSprite("enemy.png"), enemySpriteX, enemySpriteY);
 		getSpriteSize(playerSprite, playerSpriteX, playerSpriteY);
 	}
-	{//player part
-		staticPlayer = new Player(playerSprite, frameWidth/2.0, frameHeight/2.0);
+	{
+		staticPlayer = new Player(playerSprite, frameWidth/2.0, frameHeight/2.0, 75);///
 		staticPlayer->spriteSizeX = playerSpriteX;
 		staticPlayer->spriteSizeY = playerSpriteY;
 		gameObjects.push_back(staticPlayer);
 	}
-
-	{//enemies part 
+	{
 		std::default_random_engine randomizeX;
 		randomizeX.seed(getTickCount());
 		std::uniform_real_distribution<float> distributionX(0, frameWidth);
@@ -125,7 +122,8 @@ bool FrameworkImplementation::Init()
 
 		for (int i = 0; i < enemiesNum; i++)
 		{
-			gameObjects.push_back(new Enemy(createSprite("enemy.png"), distributionX(randomizeX), distributionY(randomizeY)));
+			gameObjects.push_back(new Enemy(createSprite("enemy.png"), 
+				distributionX(randomizeX), distributionY(randomizeY), 50));
 			gameObjects.at(i + 1)->spriteSizeX = enemySpriteX;
 			gameObjects.at(i + 1)->spriteSizeY = enemySpriteY;
 		}
@@ -133,9 +131,13 @@ bool FrameworkImplementation::Init()
 	return true;
 }
 
-void FrameworkImplementation::Close() {}
+void FrameworkImplementation::Close() 
+{
+	std::cout << "game over\n";
+}
 bool FrameworkImplementation::Tick()
 {
+	//drawTestBackground();
 	collisionDetection();
 	if (staticPlayer->State == Player::DEAD)
 	{
@@ -143,38 +145,35 @@ bool FrameworkImplementation::Tick()
 	}
 	float currentTime = getTickCount() / 1000.0;
 	float deltaTime = currentTime - previousTime;
-	//std::cout << deltaTime << "\n";
-	//normalize * speed * deltatime
-	drawTestBackground();
 
 	for (auto element : gameObjects)
 	{
 		drawSprite(element->sprite, element->currentPosX - (element->spriteSizeX / 2.0),
 			element->currentPosY - (element->spriteSizeY / 2.0));
 	}
-	//updating objects
 	for (int i = 0 ; i < gameObjects.size(); i++)
 	{
 		if (i == 0) 
 		{
-			staticPlayer->update(playerDislocationX, playerDislocationY);
+			staticPlayer->update(playerDislocationX, playerDislocationY, deltaTime);
 		}
 		else if(i >0 && i <= enemiesNum)
 		{
-			gameObjects.at(i)->update(staticPlayer->currentPosX, staticPlayer->currentPosY);
+			gameObjects.at(i)->update(staticPlayer->currentPosX, staticPlayer->currentPosY, deltaTime);
 		}
 		else
 		{//smth
-			gameObjects.at(i)->update(playerDislocationX, playerDislocationY);
+			gameObjects.at(i)->update(playerDislocationX, playerDislocationY, deltaTime);
 		}
 	}
-	//
-	drawSprite(reticleSprite, mouseX - (reticleSpriteX / 2), mouseY - (reticleSpriteY / 2));
-	//SET BACK TO 0 
-	playerDislocationX = 0;
-	playerDislocationY = 0;
-	previousTime = currentTime;
 
+	if (buttonState == ButtonState::RELEASED)
+	{
+		playerDislocationX = 0;
+		playerDislocationY = 0;
+	}
+	previousTime = currentTime;
+	drawSprite(reticleSprite, mouseX - (reticleSpriteX / 2), mouseY - (reticleSpriteY / 2));
 	return false;
 }
 void FrameworkImplementation::onMouseMove(int x, int y, int xrelative, int yrelative)
@@ -187,7 +186,7 @@ void FrameworkImplementation::onMouseButtonClick(FRMouseButton button, bool isRe
 {
 	if (isReleased != true)
 	{
-		create_bullet();
+		createBullet();
 	}
 }
 
@@ -195,20 +194,24 @@ void FrameworkImplementation::onKeyPressed(FRKey k)
 {								
 	switch (k)					
 	{							
-	case FRKey::DOWN:          	
+	case FRKey::DOWN:          
+		buttonState = ButtonState::PRESSED;
 		playerDislocationX = 0;
-		playerDislocationY += 20;
+		playerDislocationY += 1;
 		break;					
-	case FRKey::UP:				
+	case FRKey::UP:			
+		buttonState = ButtonState::PRESSED;
 		playerDislocationX = 0;
-		playerDislocationY -= 20;
+		playerDislocationY -= 1;
 		break;					
 	case FRKey::LEFT:			
-		playerDislocationX -= 20;
+		buttonState = ButtonState::	PRESSED;
+		playerDislocationX -= 1;
 		playerDislocationY = 0;
 		break;					
 	case FRKey::RIGHT:			
-		playerDislocationX += 20;
+		buttonState = ButtonState::PRESSED;
+		playerDislocationX += 1;
 		playerDislocationY = 0;
 		break;					
 	}							
@@ -216,6 +219,7 @@ void FrameworkImplementation::onKeyPressed(FRKey k)
 
 void FrameworkImplementation::onKeyReleased(FRKey k)
 {
+	buttonState = ButtonState::RELEASED;
 }
 
 FrameworkImplementation::FrameworkImplementation(int _enemiesNum, int _amoNum, int _width, int _height) :

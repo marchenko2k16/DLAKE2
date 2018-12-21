@@ -17,10 +17,10 @@ public:
 	int spriteSizeX;
 	int spriteSizeY;
 
-	virtual void move(float _dirX, float _dirY) = 0;
-	virtual void update(float _dirX, float _dirY) = 0;//move / shoot / 
+	virtual void move(float _dirX, float _dirY, float _dTime) = 0;
+	virtual void update(float _dirX, float _dirY, float _dTime) = 0;//move / shoot / 
 	VisibleObject() = default;
-	VisibleObject(Sprite* _sprite, float _currentX, float _currentY);
+	VisibleObject(Sprite* _sprite, float _currentX, float _currentY, float _speed);
 	~VisibleObject();
 };
 

@@ -7,11 +7,15 @@
 #include <vector>
 #include <random>
 
+enum class ButtonState {PRESSED, RELEASED};
 
 class FrameworkImplementation :
 	public Framework
 {
 private:
+	static Player* staticPlayer;
+
+	ButtonState buttonState;
 	float previousTime;
 	//SPRITE INFO. SHOULD NOT APPEAR IN THIS CLASS, I GUESS
 	Sprite* reticleSprite;
@@ -35,18 +39,18 @@ private:
 
 	int mapSizeX;
 	int mapSizeY;
-	//RESET WHEN 
+	//RESETS WHEN PLAYER MOVES
 	int playerDislocationX;
 	int playerDislocationY;
 	//
 	std::vector<VisibleObject*> gameObjects;
 
-	static Player* staticPlayer;
 	int mouseX, mouseY;
+
 public:
 	void collisionDetection();
-	void create_bullet();
-	void delete_object(int first_index, int second_index);
+	void createBullet();
+	void deleteObject(int first_index, int second_index);
 	virtual void PreInit(int& width, int& height, bool& fullscreen);
 	virtual bool Init();
 	virtual void Close();

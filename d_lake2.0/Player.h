@@ -7,9 +7,9 @@ class Player :
 {
 public:
 	enum { ALIVE, DEAD } State;
-	void move(float _dirX, float _dirY) override;
-	void update(float _dirX, float _dirY) override;
-	Player(Sprite* _sprite, float _currentX, float _currentY);
+	void move(float _dirX, float _dirY, float _dTime) override;
+	void update(float _dirX, float _dirY, float _dTime) override;
+	Player(Sprite* _sprite, float _currentX, float _currentY, float _speed);
 	~Player();
 };
 

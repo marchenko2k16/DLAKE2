@@ -8,9 +8,9 @@ public:
 	float directionX, directionY;
 	float normX, normY;
 	void normalize();
-	void move(float _dislocX, float _dislocY) override;
-	void update(float _dislocX, float _dislocY) override;
-	Bullet(Sprite* _sprite, float _dirX, float _dirY);
+	void move(float _dirX, float _dirY, float _dTime) override;
+	void update(float _dirX, float _dirY, float _dTime) override;
+	Bullet(Sprite* _sprite, float _dirX, float _dirY, float _speed);
 	~Bullet();
 };
 
